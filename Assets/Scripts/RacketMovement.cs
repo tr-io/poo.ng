@@ -14,14 +14,14 @@ public class RacketMovement : Photon.PunBehaviour, IPunObservable
     public float lastPacketTime = 0f;
     public float timeToReachGoal = 0f;
 
-    public Vector2 newVelocity = Vector2.zero;
+    public GameController gc;
 
     //General
     public float speed = 40f;
 
     void Start()
     {
-        
+        positionAtLastPacket = transform.position;
     }
 
     void FixedUpdate()
@@ -44,8 +44,20 @@ public class RacketMovement : Photon.PunBehaviour, IPunObservable
             {
                 timeToReachGoal = currentPacketTime - lastPacketTime;
                 currentTime += Time.deltaTime;
-                GetComponent<Rigidbody2D>().velocity = newVelocity / timeToReachGoal;
+                transform.position = Vector2.Lerp(positionAtLastPacket, realPosition, currentTime / timeToReachGoal);
             }
+        }
+    }
+
+    public override void OnPhotonInstantiate(PhotonMessageInfo info)
+    {
+        if (PhotonNetwork.isMasterClient)
+        {
+            gc.leftRacket = this.gameObject;
+        }
+        else
+        {
+            gc.rightRacket = this.gameObject;
         }
     }
 
@@ -53,7 +65,7 @@ public class RacketMovement : Photon.PunBehaviour, IPunObservable
     {
         if (stream.isWriting)
         {
-            stream.SendNext((Vector2)(GetComponent<Rigidbody2D>().velocity));
+            stream.SendNext((Vector2)transform.position);
         }
         else
         {
@@ -62,8 +74,6 @@ public class RacketMovement : Photon.PunBehaviour, IPunObservable
             realPosition = (Vector2)stream.ReceiveNext();
             lastPacketTime = currentPacketTime;
             currentPacketTime = (float)info.timestamp;
-
-            newVelocity = (Vector2)stream.ReceiveNext();
         }
     }
 }

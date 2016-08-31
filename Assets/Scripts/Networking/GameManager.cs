@@ -4,7 +4,6 @@ using System.Collections;
 
 public class GameManager : Photon.PunBehaviour
 {
-
     public GameObject playerPaddle;
     public GameController gc;
 
@@ -16,18 +15,15 @@ public class GameManager : Photon.PunBehaviour
         {
             if (PhotonNetwork.isMasterClient)
             {
-                PhotonNetwork.Instantiate(this.playerPaddle.name, new Vector3(-85, 0, 0), Quaternion.identity, 0);
+                GameObject leftRacket = PhotonNetwork.Instantiate(this.playerPaddle.name, new Vector3(-85, 0, 0), Quaternion.identity, 0);
+                leftRacket.GetComponent<RacketMovement>().gc = gc;
             }
             else
             {
-                PhotonNetwork.Instantiate(this.playerPaddle.name, new Vector3(85, 0, 0), Quaternion.identity, 0);
+                GameObject rightRacket = PhotonNetwork.Instantiate(this.playerPaddle.name, new Vector3(85, 0, 0), Quaternion.identity, 0);
+                rightRacket.GetComponent<RacketMovement>().gc = gc;
             }
         }
-    }
-
-    void Update()
-    {
-        
     }
 
     public override void OnLeftRoom()
@@ -39,13 +35,19 @@ public class GameManager : Photon.PunBehaviour
     {
         if (PhotonNetwork.playerList.Length == PhotonNetwork.room.maxPlayers)
         {
-            //StartGame();
+            if (PhotonNetwork.isMasterClient)
+            {
+                PhotonView gcView = gc.GetComponent<PhotonView>();
+                gcView.RPC("StartGame", PhotonTargets.All);
+            }
         }
     }
 
+    [PunRPC]
     public void StartGame()
     {
-        gc.StartGame();
+        PhotonView gcView = gc.GetComponent<PhotonView>();
+        gcView.RPC("StartGame", PhotonTargets.All);
     }
 
     public override void OnPhotonPlayerDisconnected(PhotonPlayer otherPlayer)
