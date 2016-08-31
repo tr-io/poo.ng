@@ -39,7 +39,7 @@ public class GameManager : Photon.PunBehaviour
     {
         if (PhotonNetwork.playerList.Length == PhotonNetwork.room.maxPlayers)
         {
-            StartGame();
+            //StartGame();
         }
     }
 

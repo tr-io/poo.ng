@@ -3,7 +3,7 @@ using System.Collections;
 
 public class Launcher : Photon.PunBehaviour
 {
-    string _gameVersion = "1";
+    string _gameVersion = "2";
 
     public PhotonLogLevel Loglevel = PhotonLogLevel.Informational;
 
