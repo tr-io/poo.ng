@@ -5,7 +5,7 @@ using System.Collections;
 
 public class Launcher : Photon.PunBehaviour
 {
-    string _gameVersion = "Poo-ng" + "1.0"; //first working build; only edit version number when changing versions
+    string _gameVersion = "Poo-ng" + "1.1"; //first working build; only edit version number when changing versions
 
     public PhotonLogLevel Loglevel = PhotonLogLevel.Informational;
 
@@ -50,6 +50,7 @@ public class Launcher : Photon.PunBehaviour
 
     public void Connect()
     {
+        PhotonNetwork.offlineMode = false;
         isConnecting = true;
         progressLabel.SetActive(true);
         menuPanel.SetActive(false);
@@ -81,7 +82,7 @@ public class Launcher : Photon.PunBehaviour
         menuPanel.SetActive(false);
         joinGamePanel.SetActive(false);
 
-        if (isConnecting)
+        if (PhotonNetwork.connected)
         {
             JoinCalledRoom(playerName.text);
         }
@@ -98,9 +99,17 @@ public class Launcher : Photon.PunBehaviour
         joinGamePanel.SetActive(false);
     }
 
+    public void PlayOffline()
+    {
+        PhotonNetwork.Disconnect();
+        PhotonNetwork.offlineMode = true;
+        Debug.Log(PhotonNetwork.offlineMode);
+        PhotonNetwork.CreateRoom(null);
+    }
+
     public void HostGame()
     {
-        if (isConnecting)
+        if (PhotonNetwork.connected)
         {
             PhotonNetwork.JoinOrCreateRoom(playerName.text, new RoomOptions() { MaxPlayers = MaxPlayersInRoom }, null);
         }
@@ -113,7 +122,7 @@ public class Launcher : Photon.PunBehaviour
 
     public void JoinCalledRoom(string roomName)
     {
-        if (isConnecting)
+        if (PhotonNetwork.connected)
         {
             PhotonNetwork.JoinRoom(roomName);
         }

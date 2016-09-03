@@ -9,6 +9,9 @@ public class GameController : Photon.PunBehaviour, IPunObservable
 
     public GameObject rightRacket;
     public GameObject leftRacket;
+
+    public Ball ballPrefab;
+
     public Ball thisBall;
 
     public bool paused = false;
@@ -18,11 +21,6 @@ public class GameController : Photon.PunBehaviour, IPunObservable
     void Start()
     {
         //PhotonNetwork.offlineMode = true; // debug only
-
-        if (PhotonNetwork.offlineMode)
-        {
-
-        }
     }
 
     void Update()
@@ -38,13 +36,22 @@ public class GameController : Photon.PunBehaviour, IPunObservable
     [PunRPC]
     public void scoreRight()
     {
-        if (PhotonNetwork.isMasterClient)
+        if (PhotonNetwork.offlineMode)
         {
             rightScore++;
-            //rightRacket.transform.position = new Vector2(rightRacket.transform.position.x, 0);
-            //leftRacket.transform.position = new Vector2(leftRacket.transform.position.x, 0);
-            rightRacket.GetComponent<PhotonView>().RPC("ResetPos", PhotonTargets.All);
-            leftRacket.GetComponent<PhotonView>().RPC("ResetPos", PhotonTargets.All);
+            rightRacket.GetComponent<RacketMovement>().ResetPos();
+            leftRacket.GetComponent<RacketMovement>().ResetPos();
+        }
+        else
+        {
+            if (PhotonNetwork.isMasterClient)
+            {
+                rightScore++;
+                //rightRacket.transform.position = new Vector2(rightRacket.transform.position.x, 0);
+                //leftRacket.transform.position = new Vector2(leftRacket.transform.position.x, 0);
+                rightRacket.GetComponent<PhotonView>().RPC("ResetPos", PhotonTargets.All);
+                leftRacket.GetComponent<PhotonView>().RPC("ResetPos", PhotonTargets.All);
+            }
         }
     }
 
@@ -67,30 +74,48 @@ public class GameController : Photon.PunBehaviour, IPunObservable
     [PunRPC]
     public void scoreLeft()
     {
-        if (PhotonNetwork.isMasterClient)
+        if (PhotonNetwork.offlineMode)
         {
             leftScore++;
-            //rightRacket.transform.position = new Vector2(rightRacket.transform.position.x, 0);
-            //leftRacket.transform.position = new Vector2(leftRacket.transform.position.x, 0);
-            rightRacket.GetComponent<PhotonView>().RPC("ResetPos", PhotonTargets.All);
-            leftRacket.GetComponent<PhotonView>().RPC("ResetPos", PhotonTargets.All);
+            rightRacket.GetComponent<RacketMovement>().ResetPos();
+            leftRacket.GetComponent<RacketMovement>().ResetPos();
+        }
+        else
+        {
+            if (PhotonNetwork.isMasterClient)
+            {
+                leftScore++;
+                //rightRacket.transform.position = new Vector2(rightRacket.transform.position.x, 0);
+                //leftRacket.transform.position = new Vector2(leftRacket.transform.position.x, 0);
+                rightRacket.GetComponent<PhotonView>().RPC("ResetPos", PhotonTargets.All);
+                leftRacket.GetComponent<PhotonView>().RPC("ResetPos", PhotonTargets.All);
+            }
         }
     }
 
     [PunRPC]
     public void StartGame()
     {
-        if (PhotonNetwork.isMasterClient)
+        if (PhotonNetwork.offlineMode)
         {
             paused = false;
+            thisBall = (Ball)Instantiate(ballPrefab, new Vector3(0, 0, 0), Quaternion.identity);
+            thisBall.gc = this;
+        }
+        else
+        {
+            if (PhotonNetwork.isMasterClient)
+            {
+                paused = false;
 
-            GameObject ballObj = PhotonNetwork.InstantiateSceneObject("Ball", new Vector3(0, 0, 0), Quaternion.identity, 0, null);
+                GameObject ballObj = PhotonNetwork.InstantiateSceneObject("Ball", new Vector3(0, 0, 0), Quaternion.identity, 0, null);
 
-            thisBall = ballObj.GetComponent<Ball>();
+                thisBall = ballObj.GetComponent<Ball>();
 
-            thisBall.GetComponent<PhotonView>().RPC("setGC", PhotonTargets.AllBuffered, photonView.viewID);
-            //PhotonView ballView = thisBall.GetComponent<PhotonView>();
-            //ballView.RPC("StartBall", PhotonTargets.All);
+                thisBall.GetComponent<PhotonView>().RPC("setGC", PhotonTargets.AllBuffered, photonView.viewID);
+                //PhotonView ballView = thisBall.GetComponent<PhotonView>();
+                //ballView.RPC("StartBall", PhotonTargets.All);
+            }
         }
     }
 

@@ -13,17 +13,34 @@ public class GameManager : Photon.PunBehaviour
 
         if (playerPaddle != null)
         {
-            if (PhotonNetwork.isMasterClient)
+            if (PhotonNetwork.offlineMode)
             {
-                GameObject leftRacket = PhotonNetwork.Instantiate(this.playerPaddle.name, new Vector3(-85, 0, 0), Quaternion.identity, 0);
-                PhotonView gcView = gc.GetComponent<PhotonView>();
-                gcView.RPC("SetLeftRacket", PhotonTargets.AllBuffered, leftRacket.GetComponent<PhotonView>().viewID);
+                GameObject leftRacket = (GameObject)Instantiate(playerPaddle, new Vector3(-85, 0, 0), Quaternion.identity);
+                gc.leftRacket = leftRacket;
+                leftRacket.name = "LeftRacket";
+                leftRacket.tag = "LeftRacket";
+                leftRacket.GetComponent<RacketMovement>().axis = "VerticalLeft";
+                GameObject rightRacket = (GameObject)Instantiate(playerPaddle, new Vector3(85, 0, 0), Quaternion.identity);
+                gc.rightRacket = rightRacket;
+                rightRacket.name = "RightRacket";
+                rightRacket.tag = "RightRacket";
+                rightRacket.GetComponent<RacketMovement>().axis = "VerticalRight";
+                StartGame();
             }
             else
             {
-                GameObject rightRacket = PhotonNetwork.Instantiate(this.playerPaddle.name, new Vector3(85, 0, 0), Quaternion.identity, 0);
-                PhotonView gcView = gc.GetComponent<PhotonView>();
-                gcView.RPC("SetRightRacket", PhotonTargets.AllBuffered, rightRacket.GetComponent<PhotonView>().viewID);
+                if (PhotonNetwork.isMasterClient)
+                {
+                    GameObject leftRacket = PhotonNetwork.Instantiate(this.playerPaddle.name, new Vector3(-85, 0, 0), Quaternion.identity, 0);
+                    PhotonView gcView = gc.GetComponent<PhotonView>();
+                    gcView.RPC("SetLeftRacket", PhotonTargets.AllBuffered, leftRacket.GetComponent<PhotonView>().viewID);
+                }
+                else
+                {
+                    GameObject rightRacket = PhotonNetwork.Instantiate(this.playerPaddle.name, new Vector3(85, 0, 0), Quaternion.identity, 0);
+                    PhotonView gcView = gc.GetComponent<PhotonView>();
+                    gcView.RPC("SetRightRacket", PhotonTargets.AllBuffered, rightRacket.GetComponent<PhotonView>().viewID);
+                }
             }
         }
     }
@@ -56,8 +73,15 @@ public class GameManager : Photon.PunBehaviour
     [PunRPC]
     public void StartGame()
     {
-        PhotonView gcView = gc.GetComponent<PhotonView>();
-        gcView.RPC("StartGame", PhotonTargets.All);
+        if (PhotonNetwork.offlineMode)
+        {
+            gc.StartGame();
+        }
+        else
+        {
+            PhotonView gcView = gc.GetComponent<PhotonView>();
+            gcView.RPC("StartGame", PhotonTargets.All);
+        }
     }
 
     public override void OnPhotonPlayerDisconnected(PhotonPlayer otherPlayer)

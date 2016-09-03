@@ -62,6 +62,10 @@ public class Ball : Photon.PunBehaviour, IPunObservable
             if (gc.paused)
             {
                 //GetComponent<Rigidbody2D>().velocity = Vector2.zero;
+                dir = Vector2.zero;
+            }
+            else
+            {
                 transform.Translate(dir * speed * Time.deltaTime);
             }
         }
@@ -140,7 +144,7 @@ public class Ball : Photon.PunBehaviour, IPunObservable
 
     void OnCollisionEnter2D(Collision2D col)
     {
-        if (PhotonNetwork.isMasterClient)
+        if (PhotonNetwork.offlineMode)
         {
             if (col.gameObject.CompareTag("LeftRacket"))
             {
@@ -171,18 +175,64 @@ public class Ball : Photon.PunBehaviour, IPunObservable
 
             if (col.gameObject.CompareTag("LeftWall"))
             {
-                PhotonView gcView = gc.GetComponent<PhotonView>();
-                gcView.RPC("scoreRight", PhotonTargets.All);
+                gc.scoreRight();
                 transform.position = new Vector2(0, 0);
                 dir = Vector2.left;
             }
 
             if (col.gameObject.CompareTag("RightWall"))
             {
-                PhotonView gcView = gc.GetComponent<PhotonView>();
-                gcView.RPC("scoreLeft", PhotonTargets.All);
+                gc.scoreLeft();
                 transform.position = new Vector2(0, 0);
                 dir = Vector2.right;
+            }
+        }
+        else
+        {
+            if (PhotonNetwork.isMasterClient)
+            {
+                if (col.gameObject.CompareTag("LeftRacket"))
+                {
+                    float y = hitFactor(transform.position,
+                                        col.transform.position,
+                                        col.collider.bounds.size.y);
+
+                    dir = new Vector2(1, y).normalized;
+
+                    //GetComponent<Rigidbody2D>().velocity = dir * speed;
+                }
+
+                if (col.gameObject.CompareTag("RightRacket"))
+                {
+                    float y = hitFactor(transform.position,
+                                        col.transform.position,
+                                        col.collider.bounds.size.y);
+
+                    dir = new Vector2(-1, y).normalized;
+
+                    //GetComponent<Rigidbody2D>().velocity = dir * speed;
+                }
+
+                if (col.gameObject.CompareTag("TopWall") || col.gameObject.CompareTag("BottomWall"))
+                {
+                    dir = new Vector2(dir.x, -dir.y).normalized;
+                }
+
+                if (col.gameObject.CompareTag("LeftWall"))
+                {
+                    PhotonView gcView = gc.GetComponent<PhotonView>();
+                    gcView.RPC("scoreRight", PhotonTargets.All);
+                    transform.position = new Vector2(0, 0);
+                    dir = Vector2.left;
+                }
+
+                if (col.gameObject.CompareTag("RightWall"))
+                {
+                    PhotonView gcView = gc.GetComponent<PhotonView>();
+                    gcView.RPC("scoreLeft", PhotonTargets.All);
+                    transform.position = new Vector2(0, 0);
+                    dir = Vector2.right;
+                }
             }
         }
     }
