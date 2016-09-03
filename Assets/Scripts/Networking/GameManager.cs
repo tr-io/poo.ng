@@ -28,6 +28,14 @@ public class GameManager : Photon.PunBehaviour
         }
     }
 
+    void Update()
+    {
+        if (Input.GetKeyDown(KeyCode.Escape))
+        {
+            PhotonNetwork.LeaveRoom();
+        }
+    }
+
     public override void OnLeftRoom()
     {
         SceneManager.LoadScene(0);

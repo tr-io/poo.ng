@@ -85,7 +85,7 @@ public class Ball : Photon.PunBehaviour, IPunObservable
             {
                 timeToReachGoal = currentPacketTime - lastPacketTime;
                 currentTime += Time.deltaTime;
-                transform.position = Vector2.Lerp(positionAtLastPacket, realPosition, currentTime / timeToReachGoal);
+                //transform.position = Vector2.Lerp(positionAtLastPacket, realPosition, currentTime / timeToReachGoal);
             }
         }
     }

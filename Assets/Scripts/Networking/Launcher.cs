@@ -5,7 +5,7 @@ using System.Collections;
 
 public class Launcher : Photon.PunBehaviour
 {
-    string _gameVersion = "Working" + "1.0"; //first working build; only edit version number when changing versions
+    string _gameVersion = "Poo-ng" + "1.0"; //first working build; only edit version number when changing versions
 
     public PhotonLogLevel Loglevel = PhotonLogLevel.Informational;
 
@@ -29,9 +29,11 @@ public class Launcher : Photon.PunBehaviour
     {
         PhotonNetwork.logLevel = Loglevel;
 
-        PhotonNetwork.autoJoinLobby = false;
+        PhotonNetwork.autoJoinLobby = true;
 
         PhotonNetwork.automaticallySyncScene = true;
+
+        Connect();
     }
 
     void Start()
@@ -42,7 +44,8 @@ public class Launcher : Photon.PunBehaviour
 
     void Update()
     {
-        Debug.Log(PhotonNetwork.GetRoomList());
+        Debug.Log("In lobby: " + PhotonNetwork.insideLobby);
+        Debug.Log(PhotonNetwork.GetRoomList().Length);
     }
 
     public void Connect()
@@ -66,30 +69,21 @@ public class Launcher : Photon.PunBehaviour
         Application.Quit();
     }
 
+    void OnGUI()
+    {
+        GUILayout.Label("Created by Leo Liu");
+        GUILayout.Label(PhotonNetwork.connectionStateDetailed.ToString());
+    }
+
     public void LoadGameMenu()
     {
-        progressLabel.SetActive(false);
+        progressLabel.SetActive(true);
         menuPanel.SetActive(false);
-        joinGamePanel.SetActive(true);
+        joinGamePanel.SetActive(false);
 
         if (isConnecting)
         {
-            foreach (RoomInfo game in PhotonNetwork.GetRoomList())
-            {
-                Button joinRoom = (Button)Instantiate(joinGameButton, Vector3.zero, Quaternion.identity);
-                joinRoom.GetComponentInChildren<Text>().text = game.name;
-                joinRoom.transform.SetParent(joinPanel.transform);
-                joinRoom.onClick.AddListener(() => JoinCalledRoom(game.name));
-            }
-
-            if (PhotonNetwork.GetRoomList().Length == 0)
-            {
-                unavailableText.SetActive(true);
-            }
-            else
-            {
-                unavailableText.SetActive(false);
-            }
+            JoinCalledRoom(playerName.text);
         }
         else
         {
@@ -108,7 +102,7 @@ public class Launcher : Photon.PunBehaviour
     {
         if (isConnecting)
         {
-            PhotonNetwork.CreateRoom(playerName.text + "'s room", new RoomOptions() { MaxPlayers = MaxPlayersInRoom }, null);
+            PhotonNetwork.JoinOrCreateRoom(playerName.text, new RoomOptions() { MaxPlayers = MaxPlayersInRoom }, null);
         }
         else
         {
@@ -135,6 +129,11 @@ public class Launcher : Photon.PunBehaviour
         backMenu();
     }
 
+    public override void OnJoinedLobby()
+    {
+        Debug.Log("Joined Lobby");
+    }
+
     public override void OnDisconnectedFromPhoton()
     {
         progressLabel.SetActive(false);
@@ -143,7 +142,12 @@ public class Launcher : Photon.PunBehaviour
 
     public override void OnPhotonRandomJoinFailed(object[] codeAndMsg)
     {
-        PhotonNetwork.CreateRoom(null, new RoomOptions() { MaxPlayers = MaxPlayersInRoom }, null);
+        PhotonNetwork.CreateRoom(playerName.text, new RoomOptions() { MaxPlayers = MaxPlayersInRoom }, null);
+    }
+
+    public override void OnPhotonJoinRoomFailed(object[] codeAndMsg)
+    {
+        PhotonNetwork.CreateRoom(playerName.text + "_" + PhotonNetwork.GetRoomList().Length, new RoomOptions() { MaxPlayers = MaxPlayersInRoom }, null);
     }
 
     public override void OnJoinedRoom()

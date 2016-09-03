@@ -30,6 +30,11 @@ public class GameController : Photon.PunBehaviour, IPunObservable
         scoreText.text = leftScore + " | " + rightScore;
     }
 
+    void OnGUI()
+    {
+        GUILayout.Label("Room Name: " + PhotonNetwork.room.name);
+    }
+
     [PunRPC]
     public void scoreRight()
     {
