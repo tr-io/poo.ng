@@ -16,12 +16,14 @@ public class GameManager : Photon.PunBehaviour
             if (PhotonNetwork.isMasterClient)
             {
                 GameObject leftRacket = PhotonNetwork.Instantiate(this.playerPaddle.name, new Vector3(-85, 0, 0), Quaternion.identity, 0);
-                leftRacket.GetComponent<RacketMovement>().gc = gc;
+                PhotonView gcView = gc.GetComponent<PhotonView>();
+                gcView.RPC("SetLeftRacket", PhotonTargets.AllBuffered, leftRacket.GetComponent<PhotonView>().viewID);
             }
             else
             {
                 GameObject rightRacket = PhotonNetwork.Instantiate(this.playerPaddle.name, new Vector3(85, 0, 0), Quaternion.identity, 0);
-                rightRacket.GetComponent<RacketMovement>().gc = gc;
+                PhotonView gcView = gc.GetComponent<PhotonView>();
+                gcView.RPC("SetRightRacket", PhotonTargets.AllBuffered, rightRacket.GetComponent<PhotonView>().viewID);
             }
         }
     }
@@ -38,7 +40,7 @@ public class GameManager : Photon.PunBehaviour
             if (PhotonNetwork.isMasterClient)
             {
                 PhotonView gcView = gc.GetComponent<PhotonView>();
-                gcView.RPC("StartGame", PhotonTargets.All);
+                gcView.RPC("StartGame", PhotonTargets.AllBuffered);
             }
         }
     }

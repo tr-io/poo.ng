@@ -18,6 +18,11 @@ public class GameController : Photon.PunBehaviour, IPunObservable
     void Start()
     {
         //PhotonNetwork.offlineMode = true; // debug only
+
+        if (PhotonNetwork.offlineMode)
+        {
+
+        }
     }
 
     void Update()
@@ -31,9 +36,27 @@ public class GameController : Photon.PunBehaviour, IPunObservable
         if (PhotonNetwork.isMasterClient)
         {
             rightScore++;
-            rightRacket.transform.position = new Vector2(rightRacket.transform.position.x, 0);
-            leftRacket.transform.position = new Vector2(leftRacket.transform.position.x, 0);
+            //rightRacket.transform.position = new Vector2(rightRacket.transform.position.x, 0);
+            //leftRacket.transform.position = new Vector2(leftRacket.transform.position.x, 0);
+            rightRacket.GetComponent<PhotonView>().RPC("ResetPos", PhotonTargets.All);
+            leftRacket.GetComponent<PhotonView>().RPC("ResetPos", PhotonTargets.All);
         }
+    }
+
+    [PunRPC]
+    public void SetRightRacket(int playerID)
+    {
+        rightRacket = PhotonView.Find(playerID).gameObject;
+        rightRacket.name = "RightRacket";
+        rightRacket.tag = "RightRacket";
+    }
+
+    [PunRPC]
+    public void SetLeftRacket(int playerID)
+    {
+        leftRacket = PhotonView.Find(playerID).gameObject;
+        leftRacket.name = "LeftRacket";
+        leftRacket.tag = "LeftRacket";
     }
 
     [PunRPC]
@@ -42,8 +65,10 @@ public class GameController : Photon.PunBehaviour, IPunObservable
         if (PhotonNetwork.isMasterClient)
         {
             leftScore++;
-            rightRacket.transform.position = new Vector2(rightRacket.transform.position.x, 0);
-            leftRacket.transform.position = new Vector2(leftRacket.transform.position.x, 0);
+            //rightRacket.transform.position = new Vector2(rightRacket.transform.position.x, 0);
+            //leftRacket.transform.position = new Vector2(leftRacket.transform.position.x, 0);
+            rightRacket.GetComponent<PhotonView>().RPC("ResetPos", PhotonTargets.All);
+            leftRacket.GetComponent<PhotonView>().RPC("ResetPos", PhotonTargets.All);
         }
     }
 
@@ -53,8 +78,14 @@ public class GameController : Photon.PunBehaviour, IPunObservable
         if (PhotonNetwork.isMasterClient)
         {
             paused = false;
-            PhotonView ballView = thisBall.GetComponent<PhotonView>();
-            ballView.RPC("StartBall", PhotonTargets.All);
+
+            GameObject ballObj = PhotonNetwork.InstantiateSceneObject("Ball", new Vector3(0, 0, 0), Quaternion.identity, 0, null);
+
+            thisBall = ballObj.GetComponent<Ball>();
+
+            thisBall.GetComponent<PhotonView>().RPC("setGC", PhotonTargets.AllBuffered, photonView.viewID);
+            //PhotonView ballView = thisBall.GetComponent<PhotonView>();
+            //ballView.RPC("StartBall", PhotonTargets.All);
         }
     }
 
@@ -65,14 +96,12 @@ public class GameController : Photon.PunBehaviour, IPunObservable
             stream.SendNext(rightScore);
             stream.SendNext(leftScore);
             stream.SendNext(paused);
-            stream.SendNext(leftRacket);
         }
         else
         {
             this.rightScore = (int)stream.ReceiveNext();
             this.leftScore = (int)stream.ReceiveNext();
             this.paused = (bool)stream.ReceiveNext();
-            this.leftRacket = (GameObject)stream.ReceiveNext();
         }
     }
 }

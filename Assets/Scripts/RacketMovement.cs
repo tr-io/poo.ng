@@ -24,6 +24,12 @@ public class RacketMovement : Photon.PunBehaviour, IPunObservable
         positionAtLastPacket = transform.position;
     }
 
+    [PunRPC]
+    public void ResetPos()
+    {
+        transform.position = new Vector2(transform.position.x, 0);
+    }
+
     void FixedUpdate()
     {
         if (PhotonNetwork.offlineMode)
@@ -37,28 +43,32 @@ public class RacketMovement : Photon.PunBehaviour, IPunObservable
             if (photonView.isMine)
             {
                 float v = Input.GetAxisRaw("Vertical");
-                GetComponent<Rigidbody2D>().velocity = new Vector2(0, v) * speed;
+                //GetComponent<Rigidbody2D>().velocity = new Vector2(0, v) * speed;
+                if ((transform.position + new Vector3(0, v * speed * Time.deltaTime, 0)).y < 26 && (transform.position + new Vector3(0, v * speed * Time.deltaTime, 0)).y > -26)
+                {
+                    transform.Translate(new Vector3(0, v, 0) * speed * Time.deltaTime);
+                }                
             }
 
             else if (!photonView.isMine)
             {
                 timeToReachGoal = currentPacketTime - lastPacketTime;
                 currentTime += Time.deltaTime;
-                transform.position = Vector2.Lerp(positionAtLastPacket, realPosition, currentTime / timeToReachGoal);
+                //transform.position = Vector2.Lerp(positionAtLastPacket, realPosition, currentTime / timeToReachGoal);
             }
         }
     }
 
     public override void OnPhotonInstantiate(PhotonMessageInfo info)
     {
-        if (PhotonNetwork.isMasterClient)
+        /*if (PhotonNetwork.isMasterClient)
         {
-            gc.leftRacket = this.gameObject;
+            this.name = "LeftRacket";
         }
         else
         {
-            gc.rightRacket = this.gameObject;
-        }
+            this.name = "RightRacket";
+        }*/
     }
 
     void IPunObservable.OnPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info)
