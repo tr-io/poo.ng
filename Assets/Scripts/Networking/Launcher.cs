@@ -5,7 +5,7 @@ using System.Collections;
 
 public class Launcher : Photon.PunBehaviour
 {
-    string _gameVersion = "Poo-ng" + "1.1"; //first working build; only edit version number when changing versions
+    string _gameVersion = "Poo-ng" + "1.2"; //first working build; only edit version number when changing versions
 
     public PhotonLogLevel Loglevel = PhotonLogLevel.Informational;
 

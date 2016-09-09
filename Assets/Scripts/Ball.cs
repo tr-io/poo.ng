@@ -154,6 +154,8 @@ public class Ball : Photon.PunBehaviour, IPunObservable
 
                 dir = new Vector2(1, y).normalized;
 
+                speed += 5.0f;
+
                 //GetComponent<Rigidbody2D>().velocity = dir * speed;
             }
 
@@ -164,6 +166,8 @@ public class Ball : Photon.PunBehaviour, IPunObservable
                                     col.collider.bounds.size.y);
 
                 dir = new Vector2(-1, y).normalized;
+
+                speed += 5.0f;
 
                 //GetComponent<Rigidbody2D>().velocity = dir * speed;
             }
@@ -177,6 +181,7 @@ public class Ball : Photon.PunBehaviour, IPunObservable
             {
                 gc.scoreRight();
                 transform.position = new Vector2(0, 0);
+                speed = 40.0f;
                 dir = Vector2.left;
             }
 
@@ -184,6 +189,7 @@ public class Ball : Photon.PunBehaviour, IPunObservable
             {
                 gc.scoreLeft();
                 transform.position = new Vector2(0, 0);
+                speed = 40.0f;
                 dir = Vector2.right;
             }
         }
@@ -191,7 +197,7 @@ public class Ball : Photon.PunBehaviour, IPunObservable
         {
             if (PhotonNetwork.isMasterClient)
             {
-                if (col.gameObject.CompareTag("LeftRacket"))
+                if (col.gameObject.CompareTag("LeftRacket")) // Hits left racket
                 {
                     float y = hitFactor(transform.position,
                                         col.transform.position,
@@ -199,16 +205,20 @@ public class Ball : Photon.PunBehaviour, IPunObservable
 
                     dir = new Vector2(1, y).normalized;
 
+                    speed += 5.0f;
+
                     //GetComponent<Rigidbody2D>().velocity = dir * speed;
                 }
 
-                if (col.gameObject.CompareTag("RightRacket"))
+                if (col.gameObject.CompareTag("RightRacket")) // Hits right racket
                 {
                     float y = hitFactor(transform.position,
                                         col.transform.position,
                                         col.collider.bounds.size.y);
 
                     dir = new Vector2(-1, y).normalized;
+
+                    speed += 5.0f;
 
                     //GetComponent<Rigidbody2D>().velocity = dir * speed;
                 }
@@ -223,6 +233,7 @@ public class Ball : Photon.PunBehaviour, IPunObservable
                     PhotonView gcView = gc.GetComponent<PhotonView>();
                     gcView.RPC("scoreRight", PhotonTargets.All);
                     transform.position = new Vector2(0, 0);
+                    speed = 40.0f;
                     dir = Vector2.left;
                 }
 
@@ -231,6 +242,7 @@ public class Ball : Photon.PunBehaviour, IPunObservable
                     PhotonView gcView = gc.GetComponent<PhotonView>();
                     gcView.RPC("scoreLeft", PhotonTargets.All);
                     transform.position = new Vector2(0, 0);
+                    speed = 40.0f;
                     dir = Vector2.right;
                 }
             }
@@ -253,12 +265,14 @@ public class Ball : Photon.PunBehaviour, IPunObservable
         if (stream.isWriting)
         {
             stream.SendNext((Vector2)transform.position);
+            stream.SendNext((float)speed);
         }
         else
         {
             currentTime = 0f;
             positionAtLastPacket = transform.position;
             realPosition = (Vector2)stream.ReceiveNext();
+            speed = (float)stream.ReceiveNext();
             lastPacketTime = currentPacketTime;
             currentPacketTime = (float)info.timestamp;
         }
